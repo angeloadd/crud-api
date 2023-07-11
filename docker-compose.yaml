@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  rebuy-app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: rebuy-app
+    restart: always
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - rebuy-db
+      - rebuy-storage
+
+  rebuy-db:
+    image: postgres:14-alpine
+    container_name: rebuy-db
+    restart: always
+    command: postgres
+    volumes:
+      - .ops/data/:/var/lib/postgresql/
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
