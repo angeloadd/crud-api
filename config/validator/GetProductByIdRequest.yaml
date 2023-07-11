@@ -1,0 +1,10 @@
+App\Request\v1\GetProductByIdRequest:
+  properties:
+    id:
+      - NotBlank: ~
+      - Length:
+          max: 255
+      - Type:
+          type: string
+          message: 'Id should be a string'
+      - Uuid: ~

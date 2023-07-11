@@ -1,0 +1,364 @@
+openapi: 3.1.0
+info:
+  title: Rebuy product Api definition
+  description: A simple api to manage products
+  version: 'v0.1.0'
+servers:
+  - url: http://localhost:8001
+paths:
+  /api/v1/product:
+    get:
+      description: json get api that fetches all products
+      tags:
+        - products
+      responses:
+        200:
+          description: Return 200 Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProductsResponse'
+        404:
+          description: Returns 404 if database is empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+              example:
+                code: 404
+                message: 'At the moment there are no products available. Please add a product.'
+
+    post:
+      description: json post api to create a product
+      tags:
+        - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductBody'
+            examples:
+              Valid:
+                value: {"name": "Keyboard", "manufacturer": "Apple", "price": "89.90","categories": ["Apple"], "ean_codes": ["3242374", "07432"]}
+              Invalid Example:
+                value: {"manufacturer": "Apple", "price": "89.90","categories": ["Apple"], "ean_codes": ["3242374", "07432"]}
+      responses:
+        201:
+          description: Return 201 Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+        400:
+          description: Returns 400 Bad Request if there are validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorsResponse'
+              example:
+                code: 400
+                message: Request needs modification
+                errors:
+                  - {"field": "name", "message": "This field should not be blank."}
+
+    patch:
+      description: json post api to update a product
+      tags:
+        - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductByIdBody'
+            examples:
+              Valid:
+                value: {"id":"0357915f-9045-4ede-abcd-0cfcf98fadb0", "name": "Keyboard", "manufacturer": "Apple", "price": "89.90","categories": ["Apple"], "ean_codes": ["3242374", "07432"]}
+              Invalid Example:
+                value: {"manufacturer": "Apple", "price": "89.90","categories": ["Apple"], "ean_codes": ["3242374", "07432"]}
+      responses:
+        200:
+          description: Return 200 if update was successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+              example:
+                code: 200
+                message: 'Product updates successfully.'
+        400:
+          description: Returns 400 Bad Request if there are validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorsResponse'
+              example:
+                code: 400
+                message: Request needs modification
+                errors:
+                  - {"field": "name", "message": "This field should not be blank."}
+        404:
+          description: Returns 404 if product with id provided cannot be found for deletion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+              example:
+                code: 404
+                message: 'A product with id %s could not be found'
+
+    delete:
+      description: json post api to create a product
+      tags:
+        - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteProductBody'
+            examples:
+              Valid:
+                value: {"id": "6793d916-397f-41e9-8688-e07c5f64834b"}
+              Invalid Example:
+                value: {"id": ""}
+      responses:
+        200:
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+              example:
+                code: 200
+                message: Product deleted successfully.
+        400:
+          description: Returns 400 Bad Request if there are validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorsResponse'
+              example:
+                code: 400
+                message: Request needs modification
+                errors:
+                  - {"field": "id", "message": "This field should not be blank."}
+        404:
+          description: Returns 404 if product with id provided cannot be found for deletion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+              example:
+                code: 404
+                message: 'A product with id %s could not be found'
+
+  /api/v1/product/{id}:
+    get:
+      description: json get api that fetches a product by id
+      tags:
+        - products
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: '895aeeec-1608-4cf5-a731-b7e802a7a88b'
+          description: a product id
+      responses:
+        200:
+          description: Return 200 Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProductByIdResponse'
+        400:
+          description: Returns 400 Bad Request if there are validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorsResponse'
+              example:
+                code: 400
+                message: Request needs modification
+                errors:
+                  - {"field": "id", "message": "This field should not be blank."}
+        404:
+          description: Returns 404 if product with id provided could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+              example:
+                code: 404
+                message: 'A product with id %s could not be found'
+components:
+  schemas:
+    CreateProductBody:
+      type: object
+      required:
+        - name
+        - manufacturer
+        - price
+        - categories
+        - ean_codes
+      properties:
+        name:
+          type: string
+          example: 'Keyboard'
+        manufacturer:
+          type: string
+          example: 'Apple'
+        price:
+          $ref: '#/components/schemas/Price'
+        categories:
+          $ref: '#/components/schemas/Categories'
+        ean_codes:
+          $ref: '#/components/schemas/EanCodes'
+    UpdateProductByIdBody:
+      type: object
+      required:
+        - id
+        - name
+        - manufacturer
+        - price
+        - categories
+        - ean_codes
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 'ba07d11e-a96e-47f4-917a-ff8cd9c4e1bf'
+        name:
+          type: string
+          example: 'Keyboard'
+        manufacturer:
+          type: string
+          example: 'Apple'
+        price:
+          $ref: '#/components/schemas/Price'
+        categories:
+          $ref: '#/components/schemas/Categories'
+        ean_codes:
+          $ref: '#/components/schemas/EanCodes'
+    DeleteProductBody:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 'cb911316-ebb1-44ce-8f54-a250ad72d9a7'
+    GetProductsResponse:
+      type: object
+      required:
+        - code
+        - message
+        - data
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: 'A list of all the products available'
+        data:
+          $ref: '#/components/schemas/ProductsList'
+    GetProductByIdResponse:
+      type: object
+      required:
+        - code
+        - message
+        - data
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: 'A product with the id provided'
+        data:
+          $ref: '#/components/schemas/Product'
+    GenericResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Produce created correctly
+    ValidationErrorsResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Request needs modification
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - field
+              - message
+            properties:
+              field:
+                type: string
+                example: 'name'
+              message:
+                type: string
+                example: 'This field should not be blank.'
+    ProductsList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Product'
+    Product:
+      type: object
+      required:
+        - id
+        - name
+        - manufacturer
+        - price
+        - categories
+        - ean_codes
+      properties:
+        id:
+          type: string
+          example: 'f381c0d2-f4ec-4694-abdb-4726394fef02'
+        name:
+          type: string
+          example: 'Keyboard'
+        manufacturer:
+          type: string
+          example: 'Apple'
+        price:
+          $ref: '#/components/schemas/Price'
+        categories:
+          $ref: '#/components/schemas/Categories'
+        ean_codes:
+          $ref: '#/components/schemas/EanCodes'
+    EanCodes:
+      type: array
+      items:
+        type: string
+        pattern: '^\d+$'
+        example: '843248302384'
+    Categories:
+      type: array
+      items:
+        type: string
+        example: 'Electronic'
+    Price:
+      type: string
+      pattern: '^\d{1,7}\.\d{2}$'
+      example: '89.90'

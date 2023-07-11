@@ -1,0 +1,53 @@
+App\Request\v1\CreateProductRequest:
+  properties:
+    name:
+      - NotBlank: ~
+      - Length:
+          max: 255
+      - Type:
+          type: string
+          message: 'Name should be a string'
+    manufacturer:
+      - NotBlank: ~
+      - Length:
+          max: 255
+      - Type:
+          type: string
+          message: 'Manufacturer should be a string'
+    price:
+      - NotBlank: ~
+      - Regex:
+          pattern: '/^\d{1,7}\.\d{2}$/'
+          message: 'Price should follow the pattern of max 7 digits, dot, max 2 decimal, example: 1000000.00'
+      - Type:
+          type: string
+          message: 'Price should be a string'
+    eanCodes:
+      - NotBlank: ~
+      - Type:
+          type: array
+          message: 'EAN codes should be an array'
+      - Count:
+          min: 1
+          minMessage: 'At least one EAN code must be provided'
+      - All:
+        - Type:
+            type: string
+            message: 'EAN codes should be string'
+        - Regex:
+            pattern: '/^\d+$/'
+            message: 'Ean codes should be numeric'
+        - NotBlank: ~
+    categories:
+      - NotBlank: ~
+      - Type:
+          type: array
+          message: 'Categories should be an array'
+      - Count:
+          min: 1
+          minMessage: 'At least one category must be provided'
+      - All:
+        - NotBlank: ~
+        - Type:
+            type: string
+            message: 'Categories should be string'
